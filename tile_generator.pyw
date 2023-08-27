@@ -723,7 +723,12 @@ def only_one(var, value):
 # Toggle für die nötigen Eingabefelder beim checken der Coding Checkbox
 def toggle_coding_checkbox():
     if coding_checkbox.get():
+        file_entry.config(state=tk.DISABLED)
         file_button.config(state=tk.DISABLED)
+        color_hex_cb.config(state=tk.DISABLED)
+        color_named_cb.config(state=tk.DISABLED)
+        color_hex.set(False)
+        color_named.set(False)
         message_count_entry.grid(row=4, column=1)
         message_count_label.grid(row=4, column=0)
         tileset_weight_entry.grid(row=5, column=1)
@@ -731,7 +736,12 @@ def toggle_coding_checkbox():
         assembly_weight_entry.grid(row=6, column=1)
         assembly_weight_label.grid(row=6, column=0)
     else:
+        file_entry.config(state=tk.NORMAL)
         file_button.config(state=tk.NORMAL)
+        color_hex_cb.config(state=tk.NORMAL)
+        color_named_cb.config(state=tk.NORMAL)
+        color_hex.set(True)
+        color_named.set(False)
         message_count_entry.grid_remove()
         message_count_label.grid_remove()
         tileset_weight_entry.grid_remove()
@@ -1132,6 +1142,19 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
             )
     return fp_tiles
 
+# Hilfsfunktion, um die Farbe der Tiles je nach color_code abzuändern
+# tile = ein einzelnes übergebenes Tile
+def change_colors(tile, color_code):
+    frame_tile_colors = ["#ecda88", "khaki", "#e8bfad", "salmon", "#b51621", "crimson", "#c2d9e6", "skyblue", "#0083ad", "royalblue"]
+    flag_prio_tile_colors = ["#3bb2a0", "turquoise", "#95bc0e", "lightgreen"]
+    if tile["color"] in frame_tile_colors:
+        tile["color"] = "#67939c" if color_code else "cadetblue"
+    elif tile["color"] in flag_prio_tile_colors:
+        tile["color"] = tile["color"]
+    else:
+        tile["color"] = "white"
+    return tile
+
 # Hilfsfunktion, um die Anzahl der Ziffern für eine Zahl num zur Basis base zu erhalten
 # num = angegebener integer aus der Basis 10 (Dezimalzahl)
 # base = Basis
@@ -1205,7 +1228,7 @@ def select_file():
 #
 #
 # Definition der Hauptfunktion
-def main(data, temperature, color_code, flags, priority, proofreading):
+def main(data, temperature, color_code, color_kept, flags, priority, proofreading):
     # Neue "_tiles"-Liste für die Ausgabe erstellen
     new_tiles = []
     # true, wenn alle Tiles in den jeweiligen Richtungen mindestens eine Kleberstärke > 0 haben
@@ -1336,6 +1359,9 @@ def main(data, temperature, color_code, flags, priority, proofreading):
             # ohne Proofreading werden die originalen Tiles übernommen
             new_tiles.append(tile)
 
+    # entferne den Color Code, wenn die Checkbox nicht ausgewählt wurde, um den Color Code zu behalten
+    if not color_kept:
+        new_tiles = [change_colors(tile, color_code) for tile in new_tiles]
 
     # Die Daten für die Ausgabe vorbereiten
     output_data = {
@@ -1394,6 +1420,7 @@ def start_program():
 
         # True = Hex, False = Named
         color_code = color_hex.get()
+        color_kept = color_keeper.get()
 
         # True -> Proofreading, False -> Skip Proofreading
         proofreading = proofreading_check.get()
@@ -1425,7 +1452,7 @@ def start_program():
         if not output_file.endswith('.json'):
             output_file += '.json'
 
-        output_data = main(data, int(temperature), color_code, flags, priority, proofreading)
+        output_data = main(data, int(temperature), color_code, color_kept, flags, priority, proofreading)
 
         # Die Ausgabe in die vom Benutzer angegebene Ausgabedatei schreiben
         with open(output_file, 'w') as file:
@@ -1531,16 +1558,22 @@ color_hex.set(True)
 color_hex.trace_add("write", lambda *args: only_one(color_hex, color_hex.get()))
 color_named.trace_add("write", lambda *args: only_one(color_named, color_named.get()))
 
-tk.Label(root, text="Hex Farbe:").grid(row=14, column=0)
-tk.Checkbutton(root, variable=color_hex).grid(row=14, column=0, sticky="e")
+tk.Label(root, text="HTML Farben:").grid(row=14, column=0)
+color_hex_cb = tk.Checkbutton(root, variable=color_hex)
+color_hex_cb.grid(row=14, column=0, sticky="e")
 
-tk.Label(root, text="Farbnamen:").grid(row=15, column=0)
-tk.Checkbutton(root, variable=color_named).grid(row=15, column=0, sticky="e")
+tk.Label(root, text="CSS Farben:").grid(row=15, column=0)
+color_named_cb = tk.Checkbutton(root, variable=color_named)
+color_named_cb.grid(row=15, column=0, sticky="e")
+
+color_keeper = tk.BooleanVar()
+tk.Label(root, text="Farbcode erhalten:").grid(row=16, column=0)
+tk.Checkbutton(root, variable=color_keeper).grid(row=16, column=0, sticky="e")
 
 # Trennlinie
-# Row 16
+# Row 17
 canvas1 = tk.Canvas(root, height=2, bg="black")
-canvas1.grid(row=16, column=0, columnspan=2, sticky="ew", pady=(10,10))
+canvas1.grid(row=17, column=0, columnspan=2, sticky="ew", pady=(10,10))
 
 # Molekülhöhe
 # Row 17
@@ -1561,7 +1594,7 @@ canvas1.grid(row=16, column=0, columnspan=2, sticky="ew", pady=(10,10))
 
 # Checkbox für die Prioritätslevel
 # Row 18+19
-tk.Label(root, text="Priority:").grid(row=18, column=0)
+tk.Label(root, text="Priorität:").grid(row=18, column=0)
 priority_var = tk.BooleanVar()
 priority_checkbox = tk.Checkbutton(root, variable=priority_var, command=toggle_priority_checkbox)
 priority_checkbox.grid(row=18, column=0, sticky="e")
