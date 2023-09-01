@@ -5,6 +5,7 @@ import json
 import os
 import webbrowser
 import string
+import math
 
 #(1)2
 # 3 4
@@ -24,12 +25,12 @@ def snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, 
             tile["label"], # Label
             tile["glues"][0]["label"], # nördlicher Bezeichner
             tile["glues"][0]["strength"]-1 if tile["glues"][0]["label"] else tile["glues"][0]["strength"], # nördlicher Kleber
-            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2], # östlicher Bezeichner
+            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3], # östlicher Bezeichner
             temperature, # östlicher Kleber
-            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3], # südlicher Bezeichner
-            temperature, # südlicher Kleber
+            "", # südlicher Bezeichner
+            0, # südlicher Kleber
             tile["glues"][3]["label"], # westlicher Bezeichner
-            tile["glues"][3]["strength"]-1 if not has_glues["south"] and not has_glues["north"] and has_glues["east"] and tile["glues"][3]["label"] else tile["glues"][3]["strength"], # westlicher Kleber
+            tile["glues"][3]["strength"]-1 if not has_glues["south"] and not has_glues["north"] and has_glues["east"] and tile["glues"][3]["label"] != "" else tile["glues"][3]["strength"], # westlicher Kleber
             tile["color"] # Tile Farbe
         )
     # Fall salmon
@@ -162,9 +163,9 @@ def snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, 
             tile["glues"][0]["strength"],  # nördlicher Kleber
             tile["glues"][1]["label"],  # östlicher Bezeichner
             tile["glues"][1]["strength"],  # östlicher Kleber
-            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-1],  # südlicher Bezeichner
+            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # südlicher Bezeichner
             temperature,  # südlicher Kleber
-            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # westlicher Bezeichner
+            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # westlicher Bezeichner
             temperature,  # westlicher Kleber
             tile["color"]  # Tile Farbe
         )
@@ -304,10 +305,10 @@ def snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, 
     if tile["color"] == "khaki" or tile["color"] == "#ecda88":
         return generate_tile(
             tile["label"],  # Label
-            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # nördlicher Bezeichner
-            temperature,  # nördlicher Kleber
-            "",  # östlicher Bezeichner
-            0,  # östlicher Kleber
+            "",  # nördlicher Bezeichner
+            0,  # nördlicher Kleber
+            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-1],  # östlicher Bezeichner
+            temperature,  # östlicher Kleber
             tile["glues"][2]["label"],  # südlicher Bezeichner
             tile["glues"][2]["strength"]-1 if tile["glues"][2]["label"] else tile["glues"][2]["strength"],  # südlicher Kleber
             tile["glues"][3]["label"] + "'" if tile["glues"][3]["label"] else tile["glues"][3]["label"],  # westlicher Bezeichner
@@ -436,14 +437,14 @@ def snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, 
     if tile["color"] == "khaki" or tile["color"] == "#ecda88":
         return generate_tile(
             tile["label"],  # Label
-            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-1],  # nördlicher Bezeichner
+            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # nördlicher Bezeichner
             temperature,  # nördlicher Kleber
             tile["glues"][1]["label"] + "'" if tile["glues"][1]["label"] else tile["glues"][1]["label"],  # östlicher Bezeichner
             tile["glues"][1]["strength"],  # östlicher Kleber
             tile["glues"][2]["label"] + "'" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
             tile["glues"][2]["strength"],  # südlicher Kleber
-            "",  # westlicher Bezeichner
-            0,  # westlicher Kleber
+            tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-1],  # westlicher Bezeichner
+            temperature,  # westlicher Kleber
             tile["color"]  # Tile Farbe
         )
     # Fall salmon
@@ -693,7 +694,7 @@ def check_growth(tile, has_glues, exists):
         exists["east"] = True
     elif tile["color"] == "deepskyblue" or tile["color"] == "#3ca9d5":
         exists["south"] = True
-    elif tile["color"] == "red" or tile["color"] == "#b51621":
+    elif tile["color"] == "red" or tile["color"] == "#e42034":
         exists["north"] = True
 
 # Hilfsfunktion, um das has_glues Dictionary zu aktualisieren, wenn bestimmte Tiles nicht existieren
@@ -729,6 +730,8 @@ def toggle_coding_checkbox():
         color_named_cb.config(state=tk.DISABLED)
         color_hex.set(False)
         color_named.set(False)
+        checksum_label.grid(row=3, column=1)
+        checksum_checkbox.grid(row=3, column=1, sticky="e")
         message_count_entry.grid(row=4, column=1)
         message_count_label.grid(row=4, column=0)
         tileset_weight_entry.grid(row=5, column=1)
@@ -742,6 +745,8 @@ def toggle_coding_checkbox():
         color_named_cb.config(state=tk.NORMAL)
         color_hex.set(True)
         color_named.set(False)
+        checksum_label.grid_remove()
+        checksum_checkbox.grid_remove()
         message_count_entry.grid_remove()
         message_count_label.grid_remove()
         tileset_weight_entry.grid_remove()
@@ -772,7 +777,6 @@ def toggle_priority_checkbox():
 # strength4 = westliche Kleberstärke
 # color = Farbe des Tiles
 def generate_tile(tile_label, label1, strength1, label2, strength2, label3, strength3, label4, strength4, color):
-
     return {
         "label": tile_label,
         "glues": [
@@ -1159,26 +1163,22 @@ def change_colors(tile, color_code):
 # num = angegebener integer aus der Basis 10 (Dezimalzahl)
 # base = Basis
 def get_digits(num, base):
-    # Konvertiere die gegebene Zahl in das gewünschte Basis-System und gib die Anzahl der Ziffern zurück.
+    if base == 1:
+        return num
     if num == 0:
-        return 1  # Edgecase Zahl 0, um danach while-Schleife nutzen zu können
-    digits = 0
-    while num:
-        num //= base
-        digits += 1
-    return digits
-
+        return 1
+    return math.ceil(math.log(num, base))
 
 # ermittelt die effizienteste Basis zu einer angegeben Zahl anhand von Gewichtungen
 # num = angegebener integer aus der Basis 10 (Dezimalzahl)
 # weight1 = Gewichtung für die Anzahl der Tiles im Tileset
 # weight2 = Gewichtung für die Anzahl der Tiles in der Assembly
 def find_best_base(num, weight1, weight2):
-    best_base = 2
+    best_base = 1
     best_score = float('inf')
 
-    # suche das beste Basissystem
-    for base in range(2, num + 1):
+    # suche das beste Basissystem (maximal 36, da dann 0-Z verwendet wird)
+    for base in range(1, min(num + 1, 36)):
         # Anzahl der Ziffern nach Zahl und Basis
         y = get_digits(num, base)
         # Anzahl der Tiles im Tileset
@@ -1192,19 +1192,20 @@ def find_best_base(num, weight1, weight2):
             best_base = base
     return best_base
 
+
 # Generiert Tileset für Assembly der Höhe 1 entsprechend des message_count und den Gewichtungen
 # message_count: Anzahl der Nachrichten, welche durch das Tileset abbildbar sein sollen
 # temperature: die Temperatur des Systems
 # tileset_weight: Gewichtung für die Anzahl der Tiles im Tileset
 # assembly_weight: Gewichtung für die Anzahl der Tiles in der Assembly
-def generate_data_based_on_message_count(message_count, temperature, tileset_weight, assembly_weight):
+def generate_data(message_count, temperature, tileset_weight, assembly_weight):
+    tiles = []
     # finde optimale Basis und daraus resultierende Anzahl der Ziffern
     base = find_best_base(message_count, tileset_weight, assembly_weight)
     digits = get_digits(message_count, base)
     # Liste für die Labels [0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,G,H,I,J,...]
     labels = list(string.digits + string.ascii_uppercase)
     glue_labels = string.ascii_lowercase
-    tiles = []
     # Seed Tile
     tiles.append(generate_tile("σ", "", 0, "", 0, "", 0, glue_labels[0], temperature, "#ecda88"))
     # restliche Tiles
@@ -1212,6 +1213,93 @@ def generate_data_based_on_message_count(message_count, temperature, tileset_wei
         for i in range(0, base-1):
             tiles.append(generate_tile(labels[i], "", 0, glue_labels[digit-1], temperature, "", 0, glue_labels[digit], temperature, "white"))
     return {"_tiles": tiles}
+
+# Rekursive Funktion, um alle notwenigen Tiles für Checksummen zu erstellen
+# base = Die Zahlenbasis
+# digit = die aktuell betrachtete Ziffernstelle
+# temperature = die Temperatur des Systems
+# labels = Liste für darstellung von höheren Basissystemen
+# glue_label = Kleberbezeichner
+def generate_data_recursive(base, digit, temperature, labels, glue_label):
+    temp_tiles = []
+    if digit == 1:
+        for i in range(base):
+            temp_tiles.append(generate_tile(
+                labels[i],
+                "", 0,
+                glue_label, temperature,
+                "", 0,
+                labels[i] + glue_label, temperature,
+                "white"
+                )
+            )
+    else:
+        for i in range(base):
+            temp_tiles.extend(generate_data_recursive(base,digit-1,temperature,labels,labels[i]+glue_label))
+    return temp_tiles
+
+# erstellt für Basis und Ziffernzahl die Liste von allen Zahlen
+# base = Zahlenbasis
+# digits = Anzahl der Ziffern
+def generate_formatted_numbers(base, digits):
+    numbers = []
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    max_num = base ** digits
+    for num in range(max_num):
+        result = ""
+        temp_num = num
+        while temp_num:
+            result = chars[temp_num % base] + result
+            temp_num //= base
+
+        # Führende Nullen hinzufügen, um die gewünschte Länge zu erreichen
+        while len(result) < digits:
+            result = '0' + result
+
+        numbers.append(result or '0')
+    return numbers
+
+# Generiert Tileset analog zu "generate_data_based_on_message_count", aber mit Checksumme am Ende des Moleküls
+# message_count: Anzahl der Nachrichten, welche durch das Tileset abbildbar sein sollen
+# temperature: die Temperatur des Systems
+# tileset_weight: Gewichtung für die Anzahl der Tiles im Tileset
+# assembly_weight: Gewichtung für die Anzahl der Tiles in der Assembly
+def generate_data_with_checksum(message_count, temperature, tileset_weight, assembly_weight):
+    tiles = []
+    # finde optimale Basis und daraus resultierende Anzahl der Ziffern
+    base = find_best_base(message_count, tileset_weight, assembly_weight)
+    digits = get_digits(message_count, base)
+    labels = list(string.digits + string.ascii_uppercase)
+    all_nums = generate_formatted_numbers(base, digits)
+    # Seed Tile
+    tiles.append(generate_tile("σ", "", 0, "", 0, "", 0, "σ", temperature, "#ecda88"))
+    # erste Stelle
+    for i in range(base):
+        tiles.append(generate_tile(
+            labels[i],
+            "", 0,
+            "σ", temperature,
+            "", 0,
+            labels[i], temperature,
+            "white"
+            )
+        )
+    # Rekursion für mehr stellen
+    for digit in range(2, digits + 1):
+        tiles.extend(generate_data_recursive(base, digit, temperature, labels, ""))
+    # Checksummentiles erstellen
+    for num in all_nums:
+        tiles.append(generate_tile(
+            num,
+            "adr", 1,
+            num, temperature,
+            "adr", 1,
+            "", 0,
+            "white"
+            )
+        )
+    return {"_tiles": tiles}
+
 
 # Definition der Funktion zur Auswahl der Datei
 def select_file():
@@ -1228,6 +1316,13 @@ def select_file():
 #
 #
 # Definition der Hauptfunktion
+# data =
+# temperature =
+# color_code =
+# color_kept =
+# flags =
+# priority =
+# proofreading =
 def main(data, temperature, color_code, color_kept, flags, priority, proofreading):
     # Neue "_tiles"-Liste für die Ausgabe erstellen
     new_tiles = []
@@ -1281,7 +1376,6 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
         # Upper Case Bezeichner für Flags und Prios, um Fehler vorzubeugen.
         uppercase_glue_labels = list(string.ascii_uppercase)
         # Sicher stellen, dass genügend Bezeichner vorhanden sind
-        # dafür neben Uppercase ascii, noch jede Zweier Kombination hinzufügen
         # resultierende Liste: (A,B,C,...,X,Y,Z,AA,AB,AC,...,ZX,ZY,ZZ)
         for first_char in string.ascii_uppercase:
             for second_char in string.ascii_uppercase:
@@ -1302,44 +1396,47 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
             # width = label_idx + 1, damit dieses Tile entweder immer in den width = 1 oder idx = width - 1 Cases geht
             data['_tiles'].extend(generate_flag_or_prio_tile(label_idx, str(prio), label_idx+1, temperature, strengths, uppercase_glue_labels, color_code, False))
 
-    # Jedes Tile-Label Vorkommen zählen
-    label_counts = {}
-    # Suffixe für innere Verbindungen
-    label_suffix = list(string.digits + string.ascii_lowercase)
-
-
-    # Setup 2:
-    # 1. Color Coding überprüfen
-    # 2. Check, ob die weißen Tiles von Norden oder von Süden starten müssen
-    # 3. Jedes Tile-Label Vorkommen zählen
-    for tile in data['_tiles']:
-        # 1.
-        check_color(tile["color"], color_code)
-        # 2.
-        check_growth(tile, has_glues, exists)
-        # 3.
-        label = tile['label']
-        label_counts[label] = label_counts.get(label, 0) + 1
-
-    check_existance(has_glues, exists)
-
-    if all(value == False for value in has_glues.values()):
-        raise ValueError(
-            "Für Konstruktion werden Kleber für folgende farbige Tiles benötigt: 'red','khaki' oder 'deepskyblue'")
-
     # Nach Farben sortieren, um einige zusätzliche Infos verwenden zu können
-    color_order_hex = ["#ecda88", "#e8bfad", "#c2d9e6", "#e42034", "#3ca9d5", "#0000", "white", "#b51621", "#0083ad", "#95bc0e", "#3bb2a0"]
-    color_order_named = ["khaki", "salmon", "skyblue", "red", "deepskyblue", "white", "crimson", "royalblue", "lightgreen", "turquoise"]
+    color_order_hex = ["#ecda88", "#e8bfad", "#c2d9e6", "#e42034", "#3ca9d5", "#0000", "white", "#b51621",
+                       "#0083ad", "#95bc0e", "#3bb2a0"]
+    color_order_named = ["khaki", "salmon", "skyblue", "red", "deepskyblue", "white", "crimson", "royalblue",
+                         "lightgreen", "turquoise"]
 
     if color_code:
         data['_tiles'].sort(key=lambda x: color_order_hex.index(x['color']))
     else:
         data['_tiles'].sort(key=lambda x: color_order_named.index(x['color']))
 
-
-    # Wenn Proofreading aktiviert wurde, wende 2x2 snaked proofreading an
-    # Wenn nicht, dann übernimm die originalen Tiles in der Ausgabemenge
+    # Wenn Proofreading aktiviert wurde, wende 2x2 snaked proofreading an ...
     if proofreading:
+        # Jedes Tile-Label Vorkommen zählen
+        label_counts = {}
+        # Suffixe für innere Verbindungen
+        label_suffix = list(string.digits + string.ascii_lowercase)
+        # Sicher stellen, dass genügend Bezeichner vorhanden sind (auch für Checksummen Dinge)
+        # resultierende Liste: (0,1,2,...,7,8,9,a,b,c,...,x,y,z,aa,ab,ac,...,zx,zy,zz,aaa,...,zzz)
+        for first_char in string.ascii_lowercase:
+            for second_char in string.ascii_lowercase:
+                label_suffix.append(first_char + second_char)
+                for third_char in string.ascii_lowercase:
+                    label_suffix.append(first_char + second_char + third_char)
+        # Setup 2:
+        # 1. Color Coding überprüfen
+        # 2. Check, ob die weißen Tiles von Norden oder von Süden starten müssen
+        # 3. Jedes Tile-Label Vorkommen zählen
+        for tile in data['_tiles']:
+            # 1.
+            check_color(tile["color"], color_code)
+            # 2.
+            check_growth(tile, has_glues, exists)
+            # 3.
+            label = tile['label']
+            label_counts[label] = label_counts.get(label, 0) + 1
+
+        check_existance(has_glues, exists)
+        if all(value == False for value in has_glues.values()):
+            raise ValueError(
+                "Für Konstruktion werden Kleber für folgende farbige Tiles benötigt: 'red','khaki' oder 'deepskyblue'")
         for tile in data['_tiles']:
             # Snaked Proofreading auf das Tile anwenden
             # 1 2
@@ -1354,6 +1451,7 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
             new_tiles.append(snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists))
             # Count verringern
             label_counts[tile["label"]] -= 1
+    # ... Wenn nicht, dann übernimm die originalen Tiles in der Ausgabemenge
     else:
         for tile in data['_tiles']:
             # ohne Proofreading werden die originalen Tiles übernommen
@@ -1369,12 +1467,6 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
     }
     # Ausgabepfad zurückgeben
     return output_data
-
-# TODOs:
-# Datenfluss Kontrolle ACKs
-# Höhe/Länge des Moleküls betrachten
-# gegebenes/codiertes Molekül
-# Flags
 
 #
 #
@@ -1395,19 +1487,25 @@ def start_program():
 
         # Wenn die Coding Checkbox ausgewählt ist, dann generiere aus dem Message Count ein Tileset
         if coding_checkbox.get():
-            message_count = message_count_entry.get()
-            tileset_weight = tileset_weight_entry.get()
-            assembly_weight = assembly_weight_entry.get()
-            if not message_count.isdigit():
+            message_count_str = message_count_entry.get()
+            tileset_weight_str = tileset_weight_entry.get()
+            assembly_weight_str = assembly_weight_entry.get()
+            if not message_count_str.isdigit():
                 messagebox.showerror("Fehler", "Bitte geben Sie eine gültige Zahl für die Anzahl der Nachrichten an.")
                 return
-            if not tileset_weight.isdigit():
+            if not tileset_weight_str.isdigit():
                 messagebox.showerror("Fehler", "Bitte geben Sie eine gültige Zahl für die Tileset Gewichtung an.")
                 return
-            if not assembly_weight.isdigit():
+            if not assembly_weight_str.isdigit():
                 messagebox.showerror("Fehler", "Bitte geben Sie eine gültige Zahl für die Assembly Gewichtung an.")
                 return
-            data = generate_data_based_on_message_count(message_count, temperature, tileset_weight, assembly_weight)
+            message_count = int(message_count_str)
+            tileset_weight = int(tileset_weight_str)
+            assembly_weight = int(assembly_weight_str)
+            if checksum.get():
+                data = generate_data_with_checksum(message_count, int(temperature), tileset_weight, assembly_weight)
+            else:
+                data = generate_data(message_count, int(temperature), tileset_weight, assembly_weight)
         # Wenn die Coding Checkbox nicht ausgewählt ist, dann braucht es eine Input Datei
         else:
             input_file = file_entry.get()
@@ -1447,11 +1545,9 @@ def start_program():
         #    height = molecule_height.get()
         #else:
         #    height = 0
-
         # Output Datei ist immer eine json Datei, auch wenn nicht im Namen angegeben
         if not output_file.endswith('.json'):
             output_file += '.json'
-
         output_data = main(data, int(temperature), color_code, color_kept, flags, priority, proofreading)
 
         # Die Ausgabe in die vom Benutzer angegebene Ausgabedatei schreiben
@@ -1501,10 +1597,13 @@ canvas1.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10,10))
 # Row 3-6
 tk.Label(root, text="Generiere Tileset:").grid(row=3, column=0)
 coding_checkbox = tk.BooleanVar()
+checksum = tk.BooleanVar()
+checksum_checkbox = tk.Checkbutton(root, variable=checksum)
 tileset_weight_entry = tk.Entry(root)
 assembly_weight_entry = tk.Entry(root)
 message_count_entry = tk.Entry(root)
 tk.Checkbutton(root, variable=coding_checkbox, command=toggle_coding_checkbox).grid(row=3, column=0, sticky="e")
+checksum_label = tk.Label(root, text="Checksumme erstellen:")
 tileset_weight_label = tk.Label(root, text="Tileset Gewichtung:")
 assembly_weight_label = tk.Label(root, text="Assembly Gewichtung:")
 message_count_label = tk.Label(root, text="Anzahl Nachrichten:")
