@@ -1209,9 +1209,12 @@ def generate_data(message_count, temperature, tileset_weight, assembly_weight):
     # Seed Tile
     tiles.append(generate_tile("σ", "", 0, "", 0, "", 0, glue_labels[0], temperature, "#ecda88"))
     # restliche Tiles
-    for digit in range(1, digits):
-        for i in range(0, base-1):
+    for digit in range(1, digits+1):
+        for i in range(0, base):
             tiles.append(generate_tile(labels[i], "", 0, glue_labels[digit-1], temperature, "", 0, glue_labels[digit], temperature, "white"))
+    # Letztes Tile mit Liganden
+    tiles.append(
+        generate_tile("ω", "adr", 1, glue_labels[digit], temperature, "adr", 1, "", 0, "white"))
     return {"_tiles": tiles}
 
 # Rekursive Funktion, um alle notwenigen Tiles für Checksummen zu erstellen
@@ -1316,14 +1319,15 @@ def select_file():
 #
 #
 # Definition der Hauptfunktion
-# data =
-# temperature =
-# color_code =
-# color_kept =
-# flags =
-# priority =
-# proofreading =
-def main(data, temperature, color_code, color_kept, flags, priority, proofreading):
+# data = Datensatz
+# temperature = Systemtemperatue
+# color_code = True, wenn HTML; False, wenn CSS
+# color_kept = True, wenn Colorcode erhalten bleiben soll
+# flags = Liste von Flags
+# priority = Prioritätslevel
+# proofreading = True, wenn proofreading durchgeführt werden soll
+# eval = nur für Evaluation benötigt
+def main(data, temperature, color_code, color_kept, flags, priority, proofreading, eval):
     # Neue "_tiles"-Liste für die Ausgabe erstellen
     new_tiles = []
     # true, wenn alle Tiles in den jeweiligen Richtungen mindestens eine Kleberstärke > 0 haben
@@ -1461,12 +1465,11 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
     if not color_kept:
         new_tiles = [change_colors(tile, color_code) for tile in new_tiles]
 
-    # Die Daten für die Ausgabe vorbereiten
-    output_data = {
-        "_tiles": new_tiles
-    }
-    # Ausgabepfad zurückgeben
-    return output_data
+    if eval:
+        return len(new_tiles)
+    else:
+        # Ausgabe zurückgeben
+        return {"_tiles": new_tiles}
 
 #
 #
@@ -1545,18 +1548,62 @@ def start_program():
         #    height = molecule_height.get()
         #else:
         #    height = 0
+
+        # Hilfscode, der nur für Evaluation und schnellere Analyse erstellt wurde
+        if coding_checkbox.get():
+            results = []
+            # Hier einen Eintrag auf 1 setzen, um Iterator festzulegen und auf 0 setzen, um Iterator zu deaktivieren
+            iteratives = {
+                "mc": 1,
+                "tw": 0,
+                "aw": 0
+            }
+            iterator = iteratives["mc"] and message_count or iteratives["tw"] and tileset_weight or iteratives["aw"] and assembly_weight
+            for it in range(1, iterator + 1):
+                # your loop logic here
+
+                result = {
+                    "name": "",
+                    "base": 0,
+                    "digits": 0,
+                    "length": 0,
+                    "assembly size": 0,
+                    "message count": 0,
+                    "tileset weight": 0,
+                    "assembly weight": 0
+                }
+                if checksum.get():
+                    eval_data = generate_data_with_checksum(it, int(temperature), tileset_weight, assembly_weight)
+                else:
+                    eval_data = generate_data(it, int(temperature), tileset_weight, assembly_weight)
+                result["base"] = find_best_base(it if iteratives["mc"] else message_count, it if iteratives["tw"] else tileset_weight, it if iteratives["aw"] else assembly_weight)
+                result["digits"] = get_digits(it if iteratives["mc"] else message_count, result["base"])
+                result["length"] = main(eval_data, int(temperature), color_code, color_kept, flags, priority, proofreading,True)
+                if proofreading: # digits + seed- und endtile je 4 Proofreadingtile
+                    result["assembly size"] = (result["digits"] + 2) * 4
+                else: # digits + seed- und endtile
+                    result["assembly size"] = result["digits"] + 2
+                result["message count"] = it if iteratives["mc"] else message_count
+                result["tileset weight"] = it if iteratives["tw"] else tileset_weight
+                result["assembly weight"] = it if iteratives["aw"] else assembly_weight
+                result["name"] = next(("Gen-" + key + "-" + str(it) for key, value in iteratives.items() if value), None)
+                results.append(result)
+
+            name = "Gen" + "-" + str(message_count) + "-" + str(tileset_weight) + "-" + str(assembly_weight) + "-" + "results.json"
+            with open(name, "w") as file:
+                json.dump(results, file, indent=2)
+
         # Output Datei ist immer eine json Datei, auch wenn nicht im Namen angegeben
         if not output_file.endswith('.json'):
             output_file += '.json'
-        output_data = main(data, int(temperature), color_code, color_kept, flags, priority, proofreading)
-
-        # Die Ausgabe in die vom Benutzer angegebene Ausgabedatei schreiben
-        with open(output_file, 'w') as file:
-            json.dump(output_data, file, indent=2)
+        output_data = main(data, int(temperature), color_code, color_kept, flags, priority, proofreading, False)
 
         # Bestätigungsnachricht
         messagebox.showinfo("Erfolg", "Das Skript wurde erfolgreich ausgeführt.")
 
+        # Die Ausgabe in die vom Benutzer angegebene Ausgabedatei schreiben
+        with open(output_file, 'w') as file:
+            json.dump(output_data, file, indent=2)
         # Dateibrowser öffnen, wenn Ausgabedatei gespeichert wurde
         output_dir = os.path.dirname(os.path.abspath(output_file))
         webbrowser.open(output_dir)
