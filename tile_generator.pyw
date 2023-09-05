@@ -1169,27 +1169,30 @@ def get_digits(num, base):
         return 1
     return math.ceil(math.log(num, base))
 
+
 # ermittelt die effizienteste Basis zu einer angegeben Zahl anhand von Gewichtungen
 # num = angegebener integer aus der Basis 10 (Dezimalzahl)
 # weight1 = Gewichtung für die Anzahl der Tiles im Tileset
 # weight2 = Gewichtung für die Anzahl der Tiles in der Assembly
-def find_best_base(num, weight1, weight2):
-    best_base = 1
+# chksm = True, wenn Checksumme erstellt wird
+def find_best_base(num, weight1, weight2, chksm):
+    best_base = 2
     best_score = float('inf')
 
-    # suche das beste Basissystem (maximal 36, da dann 0-Z verwendet wird)
-    for base in range(1, min(num + 1, 36)):
+    # suche das beste Basissystem (maximal 36, da dann 0-Z verwendet wird) minimal binär
+    for base in range(2, min(num + 1, 36)):
         # Anzahl der Ziffern nach Zahl und Basis
         y = get_digits(num, base)
         # Anzahl der Tiles im Tileset
-        xy1 = base * y + 1
+        xy1 = sum(base**d for d in range(1, y + 1)) + base**y + 1 if chksm else base * y + 1
+        # xy1 = base * y + 1
         # Anzahl der Tiles in der Assembly
         y1 = y + 1
         score = weight1 * xy1 + weight2 * y1
         if score < best_score:
 
             best_score = score
-            best_base = base
+            best_base = base        
     return best_base
 
 
@@ -1201,7 +1204,7 @@ def find_best_base(num, weight1, weight2):
 def generate_data(message_count, temperature, tileset_weight, assembly_weight):
     tiles = []
     # finde optimale Basis und daraus resultierende Anzahl der Ziffern
-    base = find_best_base(message_count, tileset_weight, assembly_weight)
+    base = find_best_base(message_count, tileset_weight, assembly_weight, False)
     digits = get_digits(message_count, base)
     # Liste für die Labels [0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F,G,H,I,J,...]
     labels = list(string.digits + string.ascii_uppercase)
@@ -1270,7 +1273,7 @@ def generate_formatted_numbers(base, digits):
 def generate_data_with_checksum(message_count, temperature, tileset_weight, assembly_weight):
     tiles = []
     # finde optimale Basis und daraus resultierende Anzahl der Ziffern
-    base = find_best_base(message_count, tileset_weight, assembly_weight)
+    base = find_best_base(message_count, tileset_weight, assembly_weight, True)
     digits = get_digits(message_count, base)
     labels = list(string.digits + string.ascii_uppercase)
     all_nums = generate_formatted_numbers(base, digits)
@@ -1301,7 +1304,7 @@ def generate_data_with_checksum(message_count, temperature, tileset_weight, asse
             "white"
             )
         )
-    return {"_tiles": tiles}
+    return {'_tiles': tiles}
 
 
 # Definition der Funktion zur Auswahl der Datei
@@ -1554,7 +1557,7 @@ def start_program():
             results = []
             # Hier einen Eintrag auf 1 setzen, um Iterator festzulegen und auf 0 setzen, um Iterator zu deaktivieren
             iteratives = {
-                "mc": 1,
+                "mc": 0,
                 "tw": 0,
                 "aw": 0
             }
@@ -1566,19 +1569,36 @@ def start_program():
                     "name": "",
                     "base": 0,
                     "digits": 0,
-                    "length": 0,
+                    "tileset size": 0,
                     "assembly size": 0,
                     "message count": 0,
                     "tileset weight": 0,
                     "assembly weight": 0
                 }
                 if checksum.get():
-                    eval_data = generate_data_with_checksum(it, int(temperature), tileset_weight, assembly_weight)
+                    eval_data = generate_data_with_checksum(
+                        it if iteratives["mc"] else message_count, 
+                        int(temperature), 
+                        it if iteratives["tw"] else tileset_weight, 
+                        it if iteratives["aw"] else assembly_weight)
+                    result["base"] = find_best_base(
+                        it if iteratives["mc"] else message_count, 
+                        it if iteratives["tw"] else tileset_weight, 
+                        it if iteratives["aw"] else assembly_weight,
+                        True)
                 else:
-                    eval_data = generate_data(it, int(temperature), tileset_weight, assembly_weight)
-                result["base"] = find_best_base(it if iteratives["mc"] else message_count, it if iteratives["tw"] else tileset_weight, it if iteratives["aw"] else assembly_weight)
+                    eval_data = generate_data(
+                        it if iteratives["mc"] else message_count, 
+                        int(temperature), 
+                        it if iteratives["tw"] else tileset_weight, 
+                        it if iteratives["aw"] else assembly_weight)
+                    result["base"] = find_best_base(
+                        it if iteratives["mc"] else message_count, 
+                        it if iteratives["tw"] else tileset_weight, 
+                        it if iteratives["aw"] else assembly_weight,
+                        False)
                 result["digits"] = get_digits(it if iteratives["mc"] else message_count, result["base"])
-                result["length"] = main(eval_data, int(temperature), color_code, color_kept, flags, priority, proofreading,True)
+                result["tileset size"] = main(eval_data, int(temperature), color_code, color_kept, flags, priority, proofreading,True)
                 if proofreading: # digits + seed- und endtile je 4 Proofreadingtile
                     result["assembly size"] = (result["digits"] + 2) * 4
                 else: # digits + seed- und endtile
@@ -1589,9 +1609,10 @@ def start_program():
                 result["name"] = next(("Gen-" + key + "-" + str(it) for key, value in iteratives.items() if value), None)
                 results.append(result)
 
-            name = "Gen" + "-" + str(message_count) + "-" + str(tileset_weight) + "-" + str(assembly_weight) + "-" + "results.json"
-            with open(name, "w") as file:
-                json.dump(results, file, indent=2)
+            name = "Gen" + "-" + str(message_count) + "-" + str(tileset_weight) + "-" + str(assembly_weight) + "-" + ("chksm-" if checksum.get() else "") + "results.json"
+            if iteratives["mc"] or iteratives["aw"] or iteratives["tw"]:
+                with open(name, "w") as file:
+                    json.dump(results, file, indent=2)
 
         # Output Datei ist immer eine json Datei, auch wenn nicht im Namen angegeben
         if not output_file.endswith('.json'):
