@@ -823,6 +823,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negativ Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],   # östlicher Kleber
+                        "2" + name[0].upper(), temp,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -854,6 +865,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negativ Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],   # östlicher Kleber
+                        "2" + name[0].upper(), temp,  # südlicher Kleber
+                        labels[3*idx+1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -885,6 +907,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negatives Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        labels[3*(idx-1)+1], strengths["khaki"][0],   # östlicher Kleber
+                        "2" + name[0].upper(), temp,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -916,6 +949,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negatives Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        labels[3*(idx-1)+1], strengths["khaki"][0],   # östlicher Kleber
+                        "2" + name[0].upper(), temp,  # südlicher Kleber
+                        labels[3*idx+1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -949,6 +993,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # südliches negatives Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],   # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
         elif idx == 0:  # erstes Tile neben Seed Tile
             fp_tiles.append(
                 generate_tile( # nördliches Tile
@@ -957,7 +1012,7 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     "σt", strengths["salmon"][0], # östlicher Kleber
                     "1" + name[0].upper(), temp, # südlicher Kleber
                     labels[2*idx], strengths["salmon"][0], # westlicher Kleber
-                    ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    "#e42034" if hex else "red" # Farbe
                 )
             )
             fp_tiles.append(
@@ -970,6 +1025,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     "#95bc0e" if flag else "#3bb2a0" # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # südliches negatives Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],   # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        labels[2*idx+1], strengths["khaki"][0],  # westlicher Kleber
+                        "#95bc0e" if flag else "#3bb2a0" # Farbe
+                    )
+                )
         elif idx == width-1:  # Letztes Tile neben restlichem Molekül
             fp_tiles.append(
                 generate_tile( # nördliches Tile
@@ -991,6 +1057,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # südliches negatives Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        labels[2*(idx-1)+1], strengths["khaki"][0],   # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
         else:  # ab 3 Flags/Prio Tiles innere Tiles
             fp_tiles.append(
                 generate_tile( # nördliches Tile
@@ -1012,6 +1089,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # südliches negatives Flagtile
+                        "!" + name,  # Label
+                        "1" + name[0].upper(), temp,  # nördlicher Kleber
+                        labels[2*(idx-1)+1], strengths["khaki"][0],   # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        labels[2*idx+1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
     # Höhe 2 - südlicher Rand
     elif not strengths["skyblue"][0] == -1 and not strengths["khaki"][0] == -1:
         if width == 1:  # nur ein Tile
@@ -1025,6 +1113,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # nördliches negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],   # östlicher Kleber
+                        "1" + name[0].upper(), temp,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -1046,6 +1145,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # nördliches negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],   # östlicher Kleber
+                        "1" + name[0].upper(), temp,  # südlicher Kleber
+                        labels[2*idx], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -1067,6 +1177,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # nördliches negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        labels[2*(idx-1)], strengths["khaki"][0],   # östlicher Kleber
+                        "1" + name[0].upper(), temp,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise") # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -1088,6 +1209,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # nördliches negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        labels[2*(idx-1)], strengths["khaki"][0],  # östlicher Kleber
+                        "1" + name[0].upper(), temp,  # südlicher Kleber
+                        labels[2*idx], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
+                    )
+                )
             fp_tiles.append(
                 generate_tile( # südliches Tile
                     name,  # Label
@@ -1111,6 +1243,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negatives Tile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],  # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
+                    )
+                )
         elif idx == 0:  # erstes Tile neben Seed Tile
             fp_tiles.append(
                 generate_tile( # zentrales Tile
@@ -1122,6 +1265,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        "σc", strengths["khaki"][0],  # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        labels[idx], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
+                    )
+                )
         elif idx == width-1:  # Letztes Tile neben restlichem Molekül
             fp_tiles.append(
                 generate_tile( # zentrales Tile
@@ -1133,6 +1287,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        labels[idx-1], strengths["khaki"][0],  # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        strengths["khaki"][1], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
+                    )
+                )
         else:  # ab 3 Flags/Prio Tiles innere Tiles
             fp_tiles.append(
                 generate_tile( # zentrales Tile
@@ -1144,6 +1309,17 @@ def generate_flag_or_prio_tile(idx, name, width, temp, strengths, labels, hex, f
                     ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
                 )
             )
+            if flag:
+                fp_tiles.append(
+                    generate_tile( # zentrales negatives Flagtile
+                        "!" + name,  # Label
+                        "", 0,  # nördlicher Kleber
+                        labels[idx-1], strengths["khaki"][0],  # östlicher Kleber
+                        "", 0,  # südlicher Kleber
+                        labels[idx], strengths["khaki"][0],  # westlicher Kleber
+                        ("#95bc0e" if flag else "#3bb2a0") if hex else ("lightgreen" if flag else "turquoise")  # Farbe
+                    )
+                )
     return fp_tiles
 
 # Hilfsfunktion, um die Farbe der Tiles je nach color_code abzuändern
@@ -1559,7 +1735,7 @@ def start_program():
             iteratives = {
                 "mc": 0,
                 "tw": 0,
-                "aw": 0
+                "aw": 1
             }
             iterator = iteratives["mc"] and message_count or iteratives["tw"] and tileset_weight or iteratives["aw"] and assembly_weight
             for it in range(1, iterator + 1):
