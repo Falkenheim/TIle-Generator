@@ -1735,7 +1735,7 @@ def start_program():
             iteratives = {
                 "mc": 0,
                 "tw": 0,
-                "aw": 1
+                "aw": 0
             }
             iterator = iteratives["mc"] and message_count or iteratives["tw"] and tileset_weight or iteratives["aw"] and assembly_weight
             for it in range(1, iterator + 1):
