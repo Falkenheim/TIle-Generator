@@ -16,7 +16,7 @@ import math
 # glue_strength = Dictionary, um zusätzliche Kleberstärken abfragen zu können, um innere Kleber zu bestimmen
 # label_counts = Dictionary, um die Anzahl aller Bezeichner im gesamten Tileset abzubilden und so eindeutige innere Kleberbezeichner erstellen zu können
 # label_suffix = Liste von Suffixen für die Kleberbezeichner
-def snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix):
+def snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists):
     # Fall khaki
     if tile["color"] == "khaki" or tile["color"] == "#ecda88":
         if not tile["glues"][3]["strength"] is None:
@@ -95,23 +95,39 @@ def snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, 
         )
     # Fall white/grey
     else:
-        # Fall Süden hat Kleber:
+        # Fall Süden hat Kleber und Norden existiert:
         # 3 2
         # 4 1
-        if has_glues["south"]:
+        if has_glues["south"] and exists["north"]:
             return generate_tile(
                 tile["label"],  # Label
                 tile["glues"][0]["label"],  # nördlicher Bezeichner
                 tile["glues"][0]["strength"],  # nördlicher Kleber
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # östlicher Bezeichner
-                max(temperature - tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else temperature, 1),  # östlicher Kleber
+                max(temperature - (tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0), 1),  # östlicher Kleber
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # südlicher Bezeichner
-                max(temperature - tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0, 1),  # südlicher Kleber
+                max(temperature - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),  # südlicher Kleber
                 tile["glues"][3]["label"],  # westlicher Bezeichner
                 tile["glues"][3]["strength"],  # westlicher Kleber
                 tile["color"]  # Tile Farbe
             )
-        # Fall Süden UND Norden hat keine Kleber, aber Osten:
+        # Fall Süden hat Kleber und Norden existiert nicht:
+        # 3 2
+        # 4 1
+        elif has_glues["south"]:
+            return generate_tile(
+                tile["label"],  # Label
+                tile["glues"][0]["label"],  # nördlicher Bezeichner
+                tile["glues"][0]["strength"],  # nördlicher Kleber
+                tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # östlicher Bezeichner
+                temperature,  # östlicher Kleber
+                tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # südlicher Bezeichner
+                max(temperature - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),  # südlicher Kleber
+                tile["glues"][3]["label"],  # westlicher Bezeichner
+                tile["glues"][3]["strength"],  # westlicher Kleber
+                tile["color"]  # Tile Farbe
+            )
+        # Fall Norden hat Kleber und Süden nicht
         # 2 1
         # 3 4
         elif has_glues["north"]:
@@ -122,7 +138,7 @@ def snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, 
                 "",  # östlicher Bezeichner
                 0,  # östlicher Kleber
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # südlicher Bezeichner
-                max(temperature - tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0, 1),  # südlicher Kleber
+                max(temperature - (tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0), 1),  # südlicher Kleber
                 tile["glues"][3]["label"],  # westlicher Bezeichner
                 tile["glues"][3]["strength"],  # westlicher Kleber
                 tile["color"]  # Tile Farbe
@@ -192,7 +208,7 @@ def snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, 
             tile["glues"][1]["label"],  # östlicher Bezeichner
             tile["glues"][1]["strength"]-1 if tile["glues"][1]["label"] else tile["glues"][1]["strength"],  # östlicher Kleber
             tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # südlicher Bezeichner
-            max(temperature - tile["glues"][1]["strength"] + 1, 1),  # südlicher Kleber
+            max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0) + 1, 1),  # südlicher Kleber
             tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # westlicher Bezeichner
             temperature,  # westlicher Kleber
             tile["color"]  # Tile Farbe
@@ -220,14 +236,14 @@ def snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, 
             tile["glues"][1]["label"],  # östlicher Bezeichner
             tile["glues"][1]["strength"],  # östlicher Kleber
             tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # südlicher Bezeichner
-            max(temperature - tile["glues"][1]["strength"] + 1, 1),  # südlicher Kleber
+            max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0) + 1, 1),  # südlicher Kleber
             "",  # westlicher Bezeichner
             0,  # westlicher Kleber
             tile["color"]  # Tile Farbe
         )
     # Fall white
     else:
-        # Fall Süden hat Kleber und Molekül hat nördliche Grenze:
+        # Fall Süden hat Kleber und Norden existiert:
         # 3 2
         # 4 1
         if has_glues["south"] and exists["north"]:
@@ -240,23 +256,23 @@ def snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, 
                 tile["glues"][2]["label"].replace("'","") + "<" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
                 max(temperature - (tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0) - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0), 1),  # südlicher Kleber
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # westlicher Bezeichner
-                max(temperature - tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else temperature, 1),  # westlicher Kleber
+                max(temperature - (tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0), 1),  # westlicher Kleber
                 tile["color"]  # Tile Farbe
             )
-        # Fall Süden hat Kleber und Molekül hat KEINE nördliche Grenze:
+        # Fall Süden hat Kleber und Norden existiert nicht:
         # 3 2
         # 4 1
-        elif has_glues["south"] and not exists["north"]:
+        if has_glues["south"]:
             return generate_tile(
                 tile["label"],  # Label
-                tile["glues"][0]["label"] + "'" if tile["glues"][0]["label"] else tile["glues"][0]["label"], # nördlicher Bezeichner
+                tile["glues"][0]["label"] + "'" if tile["glues"][0]["label"] else tile["glues"][0]["label"],  # nördlicher Bezeichner
                 tile["glues"][0]["strength"],  # nördlicher Kleber
                 tile["glues"][1]["label"],  # östlicher Bezeichner
                 tile["glues"][1]["strength"],  # östlicher Kleber
-                tile["glues"][2]["label"].replace("'", "") + "<" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
-                temperature,  # südlicher Kleber
-                tile["label"].lower() + label_suffix[label_counts[tile["label"]] * 3 - 3],  # westlicher Bezeichner
-                max(temperature - tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0, 1),  # westlicher Kleber
+                tile["glues"][2]["label"].replace("'","") + "<" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
+                max(temperature - (tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0) - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0), 1),  # südlicher Kleber
+                tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # westlicher Bezeichner
+                temperature,  # westlicher Kleber
                 tile["color"]  # Tile Farbe
             )
         # Fall Süden hat keine Kleber, aber Norden:
@@ -270,7 +286,7 @@ def snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, 
                 tile["glues"][1]["label"],  # östlicher Bezeichner
                 tile["glues"][1]["strength"],  # östlicher Kleber
                 tile["glues"][0]["label"].replace("'", "") + ">" if tile["glues"][0]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
-                max(temperature - tile["glues"][1]["strength"] - tile["glues"][2]["strength"], 1),  # südlicher Kleber
+                max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0) - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),  # südlicher Kleber
                 "",  # westlicher Bezeichner
                 0,  # westlicher Kleber
                 tile["color"]  # Tile Farbe
@@ -300,7 +316,7 @@ def snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, 
 # glue_strength = Dictionary, um zusätzliche Kleberstärken abfragen zu können, um innere Kleber zu bestimmen
 # label_counts = Dictionary, um die Anzahl aller Bezeichner im gesamten Tileset abzubilden und so eindeutige innere Kleberbezeichner erstellen zu können
 # label_suffix = Liste von Suffixen für die Kleberbezeichner
-def snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix):
+def snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists):
     # Fall khaki
     if tile["color"] == "khaki" or tile["color"] == "#ecda88":
         return generate_tile(
@@ -380,7 +396,7 @@ def snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, 
             return generate_tile(
                 tile["label"],  # Label
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # nördlicher Bezeichner
-                max(temperature - tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0, 1),  # nördlicher Kleber
+                max(temperature - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),  # nördlicher Kleber
                 "",  # östlicher Bezeichner
                 0,  # östlicher Kleber
                 tile["glues"][2]["label"],  # südlicher Bezeichner
@@ -389,14 +405,30 @@ def snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, 
                 tile["glues"][3]["strength"],  # westlicher Kleber
                 tile["color"]  # Tile Farbe
             )
-        # Fall Süden hat keine Kleber, aber Norden:
+        # Fall Norden hat Kleber und Süden hat keine Kleber, existiert aber.
+        # 4 1
+        # 3 2
+        elif has_glues["north"] and exists["south"]:
+            return generate_tile(
+                tile["label"],  # Label
+                tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # nördlicher Bezeichner
+                max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0), 1),  # nördlicher Kleber
+                tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # östlicher Bezeichner
+                max(temperature - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),   # östlicher Kleber
+                tile["glues"][2]["label"],  # südlicher Bezeichner
+                tile["glues"][2]["strength"],  # südlicher Kleber
+                tile["glues"][3]["label"] + "'" if tile["glues"][3]["label"] else tile["glues"][3]["label"],  # westlicher Bezeichner
+                tile["glues"][3]["strength"],  # westlicher Kleber
+                tile["color"]  # Tile Farbe
+            )
+        # Fall Norden hat Kleber und Süden hat keine Kleber und existiert auch nicht.
         # 4 1
         # 3 2
         elif has_glues["north"]:
             return generate_tile(
                 tile["label"],  # Label
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-2],  # nördlicher Bezeichner
-                max(temperature - tile["glues"][0]["strength"] if tile["glues"][0]["strength"] else 0, 1),  # nördlicher Kleber
+                max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0), 1),  # nördlicher Kleber
                 tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # östlicher Bezeichner
                 temperature,  # östlicher Kleber
                 tile["glues"][2]["label"],  # südlicher Bezeichner
@@ -466,7 +498,7 @@ def snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, 
         return generate_tile(
             tile["label"],  # Label
             tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # nördlicher Bezeichner
-            max(temperature - tile["glues"][1]["strength"] + 1,1),  # nördlicher Kleber
+            max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0) + 1,1),  # nördlicher Kleber
             tile["glues"][1]["label"] + "'" if tile["glues"][1]["label"] else tile["glues"][1]["label"],  # östlicher Bezeichner
             tile["glues"][1]["strength"],  # östlicher Kleber
             tile["glues"][2]["label"] + "'" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
@@ -494,7 +526,7 @@ def snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, 
         return generate_tile(
             tile["label"],  # Label
             tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # nördlicher Bezeichner
-            max(temperature - tile["glues"][1]["strength"] + 1, 1),  # nördlicher Kleber
+            max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0) + 1, 1),  # nördlicher Kleber
             tile["glues"][1]["label"] + "'" if tile["glues"][1]["label"] else tile["glues"][1]["label"],  # östlicher Bezeichner
             tile["glues"][1]["strength"]-1 if tile["glues"][1]["label"] else tile["glues"][1]["strength"],  # östlicher Kleber
             tile["glues"][2]["label"] + "'" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
@@ -505,10 +537,10 @@ def snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, 
         )
     # Fall white
     else:
-        # Fall Süden hat Kleber und Molekül hat nördliche Grenze:
+        # Fall Süden hat Kleber:
         # 3 2
         # 4 1
-        if has_glues["south"] and exists["north"]:
+        if has_glues["south"]:
             return generate_tile(
                 tile["label"],  # Label
                 tile["glues"][2]["label"].replace("'", "") + "<" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # nördlicher Bezeichner
@@ -521,30 +553,30 @@ def snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, 
                 0,  # westlicher Kleber
                 tile["color"]  # Tile Farbe
             )
-        # Fall Süden hat Kleber und Molekül hat KEINE nördliche Grenze:
-        # 3 2
+        # Fall Norden hat Kleber und Süden hat keine Kleber, existiert aber:
         # 4 1
-        elif has_glues["south"] and not exists["north"]:
+        # 3 2
+        elif has_glues["north"] and exists["south"]:
             return generate_tile(
                 tile["label"],  # Label
-                tile["glues"][2]["label"].replace("'", "") + "<" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # nördlicher Bezeichner
-                temperature,  # nördlicher Kleber
+                tile["glues"][0]["label"].replace("'", "") + ">" if tile["glues"][0]["label"] else tile["glues"][0]["label"],  # nördlicher Bezeichner
+                max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0) - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),  # nördlicher Kleber
                 tile["glues"][1]["label"] + "'" if tile["glues"][1]["label"] else tile["glues"][1]["label"],  # östlicher Bezeichner
                 tile["glues"][1]["strength"],  # östlicher Kleber
                 tile["glues"][2]["label"] + "'" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
-                max(temperature - glue_strength["east"],tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0),  # südlicher Kleber
-                "",  # westlicher Bezeichner
-                0,  # westlicher Kleber
+                tile["glues"][2]["strength"],  # südlicher Kleber
+                tile["label"].lower() + label_suffix[label_counts[tile["label"]]*3-3],  # westlicher Bezeichner
+                max(temperature - (tile["glues"][2]["strength"] if tile["glues"][2]["strength"] else 0), 1),  # westlicher Kleber
                 tile["color"]  # Tile Farbe
             )
-        # Fall Süden hat keine Kleber, aber Norden:
+        # Fall Norden hat Kleber und Süden hat keine Kleber und existiert nicht:
         # 4 1
         # 3 2
         elif has_glues["north"]:
             return generate_tile(
                 tile["label"],  # Label
                 tile["glues"][0]["label"].replace("'", "") + ">" if tile["glues"][0]["label"] else tile["glues"][0]["label"],  # nördlicher Bezeichner
-                max(temperature - tile["glues"][1]["strength"] - tile["glues"][2]["strength"], 1),  # nördlicher Kleber
+                max(temperature - (tile["glues"][1]["strength"] if tile["glues"][1]["strength"] else 0), 1),  # nördlicher Kleber
                 tile["glues"][1]["label"] + "'" if tile["glues"][1]["label"] else tile["glues"][1]["label"],  # östlicher Bezeichner
                 tile["glues"][1]["strength"],  # östlicher Kleber
                 tile["glues"][2]["label"] + "'" if tile["glues"][2]["label"] else tile["glues"][2]["label"],  # südlicher Bezeichner
@@ -1625,11 +1657,11 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
             # 1 2
             # 3 4
             # Tile 1 (hier die Glue Strength updaten)
-            new_tiles.append(snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix))
+            new_tiles.append(snaked_proofreading_north_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists))
             # Tile 2
             new_tiles.append(snaked_proofreading_north_east(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists))
             # Tile 3
-            new_tiles.append(snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix))
+            new_tiles.append(snaked_proofreading_south_west(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists))
             # Tile 4
             new_tiles.append(snaked_proofreading_south_east(tile, has_glues, temperature, glue_strength, label_counts, label_suffix, exists))
             # Count verringern
