@@ -1603,13 +1603,13 @@ def main(data, temperature, color_code, color_kept, flags, priority, proofreadin
     if flags:
         for flag in flags:
             # Höhe 3
-            data['_tiles'].extend(generate_flag_or_prio_tile(label_idx, str(flag), width, temperature, strengths, uppercase_glue_labels, color_code, True))
+            data['_tiles'].extend(generate_flag_or_prio_tile(label_idx, str(flag) + "f", width, temperature, strengths, uppercase_glue_labels, color_code, True))
             label_idx += 1
 
     if priority:
         for prio in range(1, int(priority)+1):
             # width = label_idx + 1, damit dieses Tile entweder immer in den width = 1 oder idx = width - 1 Cases geht
-            data['_tiles'].extend(generate_flag_or_prio_tile(label_idx, str(prio), label_idx+1, temperature, strengths, uppercase_glue_labels, color_code, False))
+            data['_tiles'].extend(generate_flag_or_prio_tile(label_idx, str(prio) + "p", label_idx+1, temperature, strengths, uppercase_glue_labels, color_code, False))
 
     # Nach Farben sortieren, um einige zusätzliche Infos verwenden zu können
     color_order_hex = ["#ecda88", "#e8bfad", "#c2d9e6", "#e42034", "#3ca9d5", "#0000", "white", "#b51621",
