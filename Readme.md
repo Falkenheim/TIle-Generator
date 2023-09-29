@@ -1,24 +1,20 @@
 # Tile-Generator
 
-Dieses Repository enthält ein Python-Skript, welches bestimmte Datenstrukturen (genannt "_tiles") transformiert und modifiziert, basierend auf verschiedenen Input-Parametern.
+Dieses Repository enthält ein zwei Python-Skripts. Das Skript **tile_generator.pyw** ist dabei das Hauptskript, welches bestimmte Datenstrukturen (Tiles) transformiert und modifiziert, basierend auf verschiedenen Input-Parametern.
+Das Skript **plotting.py** ist ein kleines Skript, welches Tilesetgröße und Assemblygröße für die Evaluation des Verhältnis dieser beiden Parameter in eine .txt-Datei schreibt.
 
-## Funktionen
+## Funktionen des Hauptskripts
 
-- **Color Coding:** Abhängig von der Farbgebung (`color_code`) können Tiles in verschiedenen Farben (z.B. "khaki", "salmon" oder "skyblue") priorisiert und manipuliert werden.
-- **Flagging:** Das Skript kann Flags (Kennzeichnungen) hinzufügen oder entfernen, basierend auf den eingegebenen Parametern.
-- **Priorität:** Es können Prioritäten gesetzt werden, welche dann in der Reihenfolge ihrer Wichtigkeit verarbeitet werden.
-- **Proofreading:** Es gibt eine Option, die ein "Proofreading" (Korrekturlesen) der "_tiles" ermöglicht, um mögliche Fehler zu korrigieren.
-- **Farben ändern:** Es gibt eine Option, um die Farben der Tiles zu ändern oder zu behalten (`color_kept`).
+- **Generation:** Das Skript kann Tilesets generieren. Wichtige Eingabeparameter dafür sind Anzahl der Nachrichten und die Gewichtung von Tileset und Assembly
+- **Checksummen:** Das Skript kann auch generierte Tilesets als Tilesets mit Checksumme erstellen.
+- **Flags:** Das Skript kann Flags in Tilesets hinzufügen, basierend auf den eingegebenen Parametern.
+- **Priorität:** Das Skript kann Prioritätslevel in Tilesets hinzufügen.
+- **Proofreading:** Das Skript kann Proofreading auf dem Tileset anwenden.
 
 ## Verwendung
 
-Das Hauptskript (`main`) verarbeitet Daten, Temperatur, Farbcodes und andere Parameter und gibt eine modifizierte Liste von "_tiles" zurück.
+Das Hauptskript (`main`) verarbeitet Tilesets und bestimmte Eingaben in der GUI und gibt eine modifizierte Liste von "_tiles" in einer JSON-Datei zurück, welche in der Simulationsumgebung netTAS als Tilesets geladen werden können.
 
-Es gibt auch eine `start_program` Funktion, die als primärer Einstiegspunkt für das Programm dient und den Benutzer durch verschiedene Eingabeaufforderungen führt.
+Das Tool **netTAS** findet sich unter folgendem Link: https://nettas.itm.uni-luebeck.de/tileSet
 
-## Beispielaufruf
 
-Das Skript kann direkt aus dem Python-Interpreter aufgerufen werden:
-
-```bash
-python script_name.py
